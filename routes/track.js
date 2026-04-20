@@ -8,16 +8,27 @@ const pixel = Buffer.from(
   "base64"
 );
 
+// 🔥 helper to extract real IP
+const getClientIp = (req) => {
+  const forwarded = req.headers["x-forwarded-for"];
+  if (forwarded) {
+    return forwarded.split(",")[0].trim(); // first IP = real client
+  }
+  return req.socket.remoteAddress;
+};
+
 // OPEN tracking pixel
 router.get("/open", async (req, res) => {
   const { emailId } = req.query;
+
+  const ip = getClientIp(req);
 
   try {
     await Event.create({
       emailId,
       type: "OPEN",
       userAgent: req.get("User-Agent"),
-      ip: req.ip,
+      ip: ip,
     });
   } catch (e) {
     console.error(e);
@@ -31,12 +42,14 @@ router.get("/open", async (req, res) => {
 router.get("/click", async (req, res) => {
   const { emailId, redirect } = req.query;
 
+  const ip = getClientIp(req);
+
   try {
     await Event.create({
       emailId,
       type: "CLICK",
       userAgent: req.get("User-Agent"),
-      ip: req.ip,
+      ip: ip,
     });
   } catch (e) {
     console.error(e);
