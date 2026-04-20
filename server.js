@@ -5,6 +5,8 @@ const connectDB = require("./config/db");
 const app = express();
 connectDB();
 
+app.use(express.json());
+
 app.use("/track", require("./routes/track"));
 app.use("/email", require("./routes/email"));
 
